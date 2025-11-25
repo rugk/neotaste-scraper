@@ -2,8 +2,8 @@ import argparse
 import requests
 from bs4 import BeautifulSoup
 
-def fetch_deals_from_city(city_slug: str):
-    """Scrape deals from a specific city."""
+def fetch_deals_from_city(city_slug: str, filter_events: bool):
+    """Scrape deals from a specific city and optionally filter event deals."""
     url = f"https://neotaste.com/de/restaurants/{city_slug}"
     html = requests.get(url).text
     soup = BeautifulSoup(html, "html.parser")
@@ -37,6 +37,13 @@ def fetch_deals_from_city(city_slug: str):
             for sp in deal_spans
             if sp.get_text(strip=True)
         ]
+
+        if not deals:
+            continue
+
+        # Filter only event deals (those with 🌟)
+        if filter_events:
+            deals = [deal for deal in deals if "🌟" in deal]
 
         if not deals:
             continue
@@ -78,13 +85,16 @@ def main():
     parser.add_argument(
         "-a", "--all", action="store_true", help="Scrape all available cities"
     )
+    parser.add_argument(
+        "-e", "--events", action="store_true", help="Filter only event deals (🌟)"
+    )
 
     args = parser.parse_args()
 
     if args.city:
         # Fetch and print deals for a specific city
         print(f"Fetching deals for city: {args.city}...")
-        deals = fetch_deals_from_city(args.city)
+        deals = fetch_deals_from_city(args.city, args.events)
         print_deals(deals)
 
     elif args.all:
@@ -93,7 +103,7 @@ def main():
         cities = fetch_all_cities()
         for city in cities:
             print(f"Fetching deals for city: {city}...")
-            deals = fetch_deals_from_city(city)
+            deals = fetch_deals_from_city(city, args.events)
             print_deals(deals)
 
     else:
