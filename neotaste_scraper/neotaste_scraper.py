@@ -120,5 +120,3 @@ def fetch_all_cities(lang="de"):
             })
 
     return cities
-
-
