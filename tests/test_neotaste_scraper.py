@@ -10,9 +10,10 @@ from bs4 import BeautifulSoup
 from neotaste_scraper.neotaste_scraper import (
     extract_deals_from_card,
     fetch_deals_from_city,
-    fetch_all_cities,
-    print_deals
+    fetch_all_cities
 )
+from neotaste_scraper.data_output import print_deals
+
 
 def load_html(file_name):
     """Helper function to load HTML from a file"""
