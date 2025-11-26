@@ -4,39 +4,30 @@ Tests for CLI main Python file.
 
 from unittest.mock import patch, MagicMock
 
+import pytest
 from bs4 import BeautifulSoup
 
 from neotaste_scraper.neotaste_scraper import (
     extract_deals_from_card,
     fetch_deals_from_city,
     fetch_all_cities,
-    print_deals,
-    BASE_URL
+    print_deals
 )
 
-# Sample HTML response to simulate BeautifulSoup parsing
-DEAL_HTML_CONTENT = """
-<a href="/gb/restaurants/berlin/peter-pane-burgergrill-bar-friedrichstr">
-  <div class="flex flex-col">
-    <h4 class="font-semibold text-[18px] whitespace-nowrap overflow-hidden text-ellipsis mt-3 mb-0.5 text-black">PETER PANE Burgergrill &amp; Bar - Friedrichstr.</h4>
-    <div class="relative overflow-hidden" data-sentry-component="RestaurantCardDeals">
-      <div class="flex flex-1 mt-2 items-center justify-start overflow-x-auto gap-2 whitespace-nowrap relative w-full min-h-4 min-w-full flex-grow-0 flex-shrink-0 scrollbar-hide">
-        <div class="bg-neotaste rounded-full w-fit flex items-center justify-center px-3 font-semibold text-[12px] py-2 gap-x-1 whitespace-nowrap min-h-8 max-h-8" data-sentry-component="RestaurantDealPreview">
-          <span class="mt-[1px]">🌟 €5 Wild Bert with Betel 🌟</span>
-        </div>
-        <div class="bg-neotaste rounded-full w-fit flex items-center justify-center px-3 font-semibold text-[12px] py-2 gap-x-1 whitespace-nowrap min-h-8 max-h-8" data-sentry-component="RestaurantDealPreview">
-          <span class="mt-[1px]">2for1 Aperitif</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</a>
-"""
+# Helper function to load HTML from a file
+def load_html(file_name):
+    with open(file_name, 'r', encoding='utf-8') as file:
+        return file.read()
 
-def test_extract_deals_from_card():
-    """Test extract_deals_from_card function"""
+@pytest.mark.parametrize("html_file", [
+    'tests/html_snippets/deal-per-city.html'
+])
+def test_extract_deals_from_card(html_file):
+    """Test extract_deals_from_card function with different HTML contents"""
+
+    html_content = load_html(html_file)
     # Simulate the BeautifulSoup object as it would parse the HTML content
-    soup = BeautifulSoup(DEAL_HTML_CONTENT, "html.parser")
+    soup = BeautifulSoup(html_content, "html.parser")
 
     # Find the first <a> tag (simulating the restaurant card)
     card = soup.find("a")
@@ -51,12 +42,17 @@ def test_extract_deals_from_card():
     assert "🌟 €5 Wild Bert with Betel 🌟" in result['deals']
     assert "2for1 Aperitif" in result['deals']
 
+
+@pytest.mark.parametrize("html_file", [
+    'tests/html_snippets/deal-per-city.html'
+])
 @patch('requests.get')
-def test_fetch_deals_from_city(mock_get):
+def test_fetch_deals_from_city(mock_get, html_file):
     """Test fetch_deals_from_city function with mocking requests"""
     # Mock the response from requests.get
     mock_response = MagicMock()
-    mock_response.text = DEAL_HTML_CONTENT
+    html_content = load_html(html_file)
+    mock_response.text = html_content
     mock_get.return_value = mock_response
 
     # Call the function under test
@@ -68,16 +64,21 @@ def test_fetch_deals_from_city(mock_get):
     assert "🌟 €5 Wild Bert with Betel 🌟" in result[0]['deals']
     assert "2for1 Aperitif" in result[0]['deals']
 
+@pytest.mark.parametrize("html_file", [
+    'tests/html_snippets/restaurant-overview-all-cities-simplified.html',
+    'tests/html_snippets/restaurant-overview-all-cities.html'
+])
 @patch('requests.get')
-def test_fetch_all_cities(mock_get):
+def test_fetch_all_cities(mock_get, html_file):
     """Test fetch_all_cities function with mocking requests"""
     # Mock the response from requests.get
     mock_response = MagicMock()
-    mock_response.text = "<html><body><div data-sentry-component='CitiesList'><a href='/en/restaurants/sample-city'><span>Sample City</span></a></div></body></html>"
+    html_content = load_html(html_file)
+    mock_response.text = html_content
     mock_get.return_value = mock_response
 
     cities = fetch_all_cities(lang="en")
-    assert len(cities) == 1
+    assert len(cities) >= 1
     assert cities[0]['name'] == "Sample City"
     assert cities[0]['slug'] == "sample-city"
 

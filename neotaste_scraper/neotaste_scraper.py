@@ -108,12 +108,21 @@ def fetch_all_cities(lang="de"):
 
     soup = BeautifulSoup(html, "html.parser")
     city_links = soup.select('[data-sentry-component="CitiesList"] a')
-    cities = [
-        {"slug": link.get("href").split("/")[3], "name": link.get_text(strip=True)}
-        for link in city_links if link.get("href")
-    ]
+
+    cities = []
+    for link in city_links:
+        # This class should contain the city name
+        city_name = link.select_one(".font-semibold")
+
+        # Ensure the city name is extracted correctly and strip out any extra spaces
+        if city_name:
+            cities.append({
+                "slug": link.get("href").split("/")[3],
+                "name": city_name.get_text(strip=True)
+            })
 
     return cities
+
 
 def print_deals(cities_data, lang="de"):
     """Print the formatted deals (text output)."""
