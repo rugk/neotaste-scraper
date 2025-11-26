@@ -21,13 +21,13 @@ def print_deals(cities_data, lang="de"):
             print(f"   → {r['link']}")
 
 
-def output_json(cities_data):
+def output_json(cities_data, filename: str = "output.json"):
     """Output deals in JSON format, including city information."""
-    with open("output.json", "w", encoding="utf-8") as f:
+    with open(filename, "w", encoding="utf-8") as f:
         json.dump(cities_data, f, ensure_ascii=False, indent=4)
 
 
-def output_html(cities_data, lang="de"):
+def output_html(cities_data, lang="de", filename: str = "output.html"):
     """Output deals in simple HTML format, grouped by city, using Jinja2 for templating."""
     strings = get_localized_strings(lang)
 
@@ -48,5 +48,5 @@ def output_html(cities_data, lang="de"):
     html_content = template.render(context)
 
     # Output HTML content to a file
-    with open("output.html", "w", encoding="utf-8") as f:
+    with open(filename, "w", encoding="utf-8") as f:
         f.write(html_content)

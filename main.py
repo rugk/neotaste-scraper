@@ -33,16 +33,22 @@ def main():
         "-e", "--events", action="store_true", help="Filter only event deals (🌟)"
     )
     parser.add_argument(
-        "-j", "--json", action="store_true", help="Output in JSON format"
+        "-j", "--json", type=str, nargs="?", const="output.json", help="Output in JSON format (default: output.json)"
     )
     parser.add_argument(
-        "-H", "--html", action="store_true", help="Output in HTML format"
+        "-H", "--html", type=str, nargs="?", const="output.html", help="Output in HTML format (default: output.html)"
     )
     parser.add_argument(
         "-l", "--lang", type=str, choices=["de", "en"], default="de", help="Language (default: de)"
     )
 
+    # Parse the arguments
     args = parser.parse_args()
+
+    # Ensure that --city and --all are mutually exclusive
+    if args.city and args.all:
+        print("Error: --city and --all cannot be used together.")
+        return
 
     cities_data = {}
 
@@ -69,13 +75,14 @@ def main():
 
     # Output in JSON format if requested
     if args.json:
-        print("Outputting deals to output.json...")
-        output_json(cities_data)
+        print(f"Outputting deals to {args.json}...")
+        output_json(cities_data, args.json)
 
     # Output in HTML format if requested
     if args.html:
-        print("Outputting deals to output.html...")
-        output_html(cities_data, args.lang)
+        print(f"Outputting deals to {args.html}...")
+        output_html(cities_data, args.lang, args.html)
+
 
 
 if __name__ == "__main__":
