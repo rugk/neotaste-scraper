@@ -21,6 +21,7 @@ def load_html(file_name):
 
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/deal-per-city.html',
+    'tests/html_snippets/deal-per-city-simplified.html',
     'tests/html_snippets/deal-per-city-new-badge.html'
 ])
 def test_extract_deals_from_card(html_file):
