@@ -14,8 +14,8 @@ from neotaste_scraper.neotaste_scraper import (
     print_deals
 )
 
-# Helper function to load HTML from a file
 def load_html(file_name):
+    """Helper function to load HTML from a file"""
     with open(file_name, 'r', encoding='utf-8') as file:
         return file.read()
 
@@ -44,7 +44,6 @@ def test_extract_deals_from_card(html_file):
     assert len(result['deals']) == 2  # Two deals: one with 🌟 and one without
     assert "🌟 €5 Wild Bert with Betel 🌟" in result['deals']
     assert "2for1 Aperitif" in result['deals']
-
 
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/deal-per-city.html'
@@ -96,4 +95,3 @@ def test_print_deals(mock_print):
     mock_print.assert_any_call("  Sample Restaurant")
     mock_print.assert_any_call("   - 🌟 €5 Off")
     mock_print.assert_any_call("   → http://link.com")
-
