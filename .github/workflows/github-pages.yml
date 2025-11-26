@@ -30,8 +30,8 @@ jobs:
       - name: Run export script
         run: |
           mkdir output
-          python main.py --all --html output/index.html
-          python main.py --all --event --html output/event-only.html
+          python main.py --all --html output/index.html --json output/index.json
+          python main.py --all --event --html output/event-only.html --json output/event-only.json
 
       - name: Upload site files
         uses: actions/upload-pages-artifact@v4
