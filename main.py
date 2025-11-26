@@ -7,13 +7,15 @@ different formats: text, JSON, or HTML.
 """
 import argparse
 
-from neotaste_scraper.neotaste_scraper import (
-    fetch_deals_from_city,
-    fetch_all_cities,
-    get_localized_strings,
+from neotaste_scraper.data_output import (
     print_deals,
     output_json,
     output_html
+)
+from neotaste_scraper.neotaste_scraper import (
+    fetch_deals_from_city,
+    fetch_all_cities,
+    get_localized_strings
 )
 
 
