@@ -6,8 +6,33 @@ import json
 
 from jinja2 import Environment, FileSystemLoader
 
-from neotaste_scraper.neotaste_scraper import get_localized_strings, BASE_URL
+from neotaste_scraper.neotaste_scraper import BASE_URL
 
+# Localized Strings
+localized_strings = {
+    'de': {
+        'deals_title': "NeoTaste Deals",
+        'restaurant_link_text': "Mehr Informationen/Details zum Angebot",
+        'view_restaurant': "Restaurant ansehen",
+        'deals_in': "Deals in",
+        'no_deals_found': "Keine Deals gefunden.",
+        'city_page': "Seite der Stadt",
+        'restaurant_details': "Mehr Details zum Restaurant",
+    },
+    'en': {
+        'deals_title': "NeoTaste Deals",
+        'restaurant_link_text': "More Info/Details about the Offer",
+        'view_restaurant': "View Restaurant",
+        'deals_in': "Deals in",
+        'no_deals_found': "No deals found.",
+        'city_page': "City Page",
+        'restaurant_details': "Restaurant Details",
+    }
+}
+
+def get_localized_strings(lang):
+    """Return the localized strings for the given language."""
+    return localized_strings.get(lang, localized_strings['de'])  # Default to German if not found
 
 def print_deals(cities_data, lang="de"):
     """Print the formatted deals (text output)."""
