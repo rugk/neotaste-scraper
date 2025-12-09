@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 This tool allows you to scrape restaurant deal information from
 NeoTaste's city-specific restaurant pages.
