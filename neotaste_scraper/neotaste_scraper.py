@@ -12,32 +12,6 @@ from bs4 import BeautifulSoup
 # Constants
 BASE_URL = "https://neotaste.com"
 
-# Localized Strings
-localized_strings = {
-    'de': {
-        'deals_title': "NeoTaste Deals",
-        'restaurant_link_text': "Mehr Informationen/Details zum Angebot",
-        'view_restaurant': "Restaurant ansehen",
-        'deals_in': "Deals in",
-        'no_deals_found': "Keine Deals gefunden.",
-        'city_page': "Seite der Stadt",
-        'restaurant_details': "Mehr Details zum Restaurant",
-    },
-    'en': {
-        'deals_title': "NeoTaste Deals",
-        'restaurant_link_text': "More Info/Details about the Offer",
-        'view_restaurant': "View Restaurant",
-        'deals_in': "Deals in",
-        'no_deals_found': "No deals found.",
-        'city_page': "City Page",
-        'restaurant_details': "Restaurant Details",
-    }
-}
-
-def get_localized_strings(lang):
-    """Return the localized strings for the given language."""
-    return localized_strings.get(lang, localized_strings['de'])  # Default to German if not found
-
 def get_city_url(city_slug, lang="de"):
     """Construct full URL for the given city with the specified language."""
     return f"{BASE_URL}/{lang}/restaurants/{city_slug}"
