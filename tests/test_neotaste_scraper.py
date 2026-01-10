@@ -20,10 +20,12 @@ def load_html(file_name):
     with open(file_name, 'r', encoding='utf-8') as file:
         return file.read()
 
+
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/deal-per-city.html',
     'tests/html_snippets/deal-per-city-simplified.html',
-    'tests/html_snippets/deal-per-city-new-badge.html'
+    'tests/html_snippets/deal-per-city-new-badge.html',
+    'tests/html_snippets/deal-per-city-flash.html'
 ])
 def test_extract_deals_from_card(html_file):
     """Test extract_deals_from_card function with different HTML contents"""
@@ -35,16 +37,28 @@ def test_extract_deals_from_card(html_file):
     # Find the first <a> tag (simulating the restaurant card)
     card = soup.find("a")
 
-    # Call the function to extract deals
-    result = extract_deals_from_card(card, filter_events=False)
+    # Call the function to extract deals (no filter)
+    result = extract_deals_from_card(card, filter_mode=None)
 
     # Assert the result is not None
     assert result is not None
     assert result['restaurant'] == "PETER PANE Burgergrill & Bar - Friedrichstr."
     assert result['link'] == "https://neotaste.com/gb/restaurants/berlin/peter-pane-burgergrill-bar-friedrichstr"
-    assert len(result['deals']) == 2  # Two deals: one with 🌟 and one without
-    assert "🌟 €5 Wild Bert with Betel 🌟" in result['deals']
-    assert "2for1 Aperitif" in result['deals']
+
+    # Expectations per HTML fixture
+    expected = {
+        'tests/html_snippets/deal-per-city.html': ["🌟 €5 Wild Bert with Betel 🌟", "2for1 Aperitif"],
+        'tests/html_snippets/deal-per-city-simplified.html': ["🌟 €5 Wild Bert with Betel 🌟", "2for1 Aperitif"],
+        'tests/html_snippets/deal-per-city-new-badge.html': ["🌟 €5 Wild Bert with Betel 🌟", "2for1 Aperitif"],
+        'tests/html_snippets/deal-per-city-flash.html': ["5€ Bowl", "10€ Rabatt", "GRATIS Getränk"]
+    }
+
+    exp = expected.get(html_file)
+    assert exp is not None
+    assert len(result['deals']) == len(exp)
+    for deal in exp:
+        assert deal in result['deals']
+
 
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/deal-per-city.html'
@@ -58,14 +72,15 @@ def test_fetch_deals_from_city(mock_get, html_file):
     mock_response.text = html_content
     mock_get.return_value = mock_response
 
-    # Call the function under test
-    result = fetch_deals_from_city("sample-city", filter_events=False)
+    # Call the function under test (no filter)
+    result = fetch_deals_from_city("sample-city", filter_mode=None)
 
     # Assert that the result contains 1 restaurant
     assert len(result) == 1
     assert result[0]['restaurant'] == "PETER PANE Burgergrill & Bar - Friedrichstr."
     assert "🌟 €5 Wild Bert with Betel 🌟" in result[0]['deals']
     assert "2for1 Aperitif" in result[0]['deals']
+
 
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/restaurant-overview-all-cities-simplified.html',
@@ -84,6 +99,7 @@ def test_fetch_all_cities(mock_get, html_file):
     assert len(cities) >= 1
     assert cities[0]['name'] == "Sample City"
     assert cities[0]['slug'] == "sample-city"
+
 
 @patch('builtins.print')
 def test_print_deals(mock_print):

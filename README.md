@@ -5,17 +5,17 @@ This tool allows you to scrape restaurant deal information from NeoTaste's city-
 ## Website
 
 An up-to-date HTML output for all cities can be found [here at this GitHub page](https://rugk.github.io/neotaste_scraper/en). Variations:
-* [a filtered view with all event deals](https://rugk.github.io/neotaste_scraper/en/event-only.html)
+* [a filtered view with all special deals](https://rugk.github.io/neotaste_scraper/en/special-only.html)
 
 The JSON result is also available:
 * [full JSON result](https://rugk.github.io/neotaste_scraper/en/index.json)
-* [only event deals](https://rugk.github.io/neotaste_scraper/en/event-only.json)
+* [only special deals](https://rugk.github.io/neotaste_scraper/en/special-only.json)
 
 Same s avaulable in German:
 * [all events](https://rugk.github.io/neotaste_scraper/de)
-* [a filtered view with all event deals](https://rugk.github.io/neotaste_scraper/de/event-only.html)
+* [a filtered view with all special deals](https://rugk.github.io/neotaste_scraper/de/special-only.html)
 * [full JSON result](https://rugk.github.io/neotaste_scraper/de/index.json)
-* [only event deals](https://rugk.github.io/neotaste_scraper/de/event-only.json)
+* [only special deals](https://rugk.github.io/neotaste_scraper/de/special-only.json)
 
 ## Installation
 
@@ -59,6 +59,12 @@ Once the tool is installed, you can run the script using the command line to fet
 
 * `-e`, `--events`
   Filter only event deals, which are marked with `🌟` in their name.
+
+* `-f`, `--flash`
+  Filter only flash deals, which are special flash promotions (bolt/flash badge).
+
+* `-s`, `--special`
+  Filter only special deals (includes both `events` and `flash`).
 
 * `-j`, `--json`
   Output the results in JSON format. This will generate an `output.json` file.
@@ -183,7 +189,7 @@ Especially for early-prototyping this has heavily [used ChatGPT](https://chatgpt
 The GitHub Actions workflow runs a verification step after the export. It checks the generated
 JSON exports (`output/de/index.json`, `output/en/index.json`) and fails the workflow if all
 city lists are empty — this prevents deploying a broken/empty site. The workflow will also
-check `event-only` JSON files but treats them as non-failing (those are expected to be empty
+check `special-only` JSON files but treats them as non-failing (those are expected to be empty
 often).
 
 If you want to test the verification locally, run:
