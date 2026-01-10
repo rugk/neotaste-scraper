@@ -20,6 +20,7 @@ def load_html(file_name):
     with open(file_name, 'r', encoding='utf-8') as file:
         return file.read()
 
+
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/deal-per-city.html',
     'tests/html_snippets/deal-per-city-simplified.html',
@@ -58,6 +59,7 @@ def test_extract_deals_from_card(html_file):
     for deal in exp:
         assert deal in result['deals']
 
+
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/deal-per-city.html'
 ])
@@ -79,6 +81,7 @@ def test_fetch_deals_from_city(mock_get, html_file):
     assert "🌟 €5 Wild Bert with Betel 🌟" in result[0]['deals']
     assert "2for1 Aperitif" in result[0]['deals']
 
+
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/restaurant-overview-all-cities-simplified.html',
     'tests/html_snippets/restaurant-overview-all-cities.html'
@@ -96,6 +99,7 @@ def test_fetch_all_cities(mock_get, html_file):
     assert len(cities) >= 1
     assert cities[0]['name'] == "Sample City"
     assert cities[0]['slug'] == "sample-city"
+
 
 @patch('builtins.print')
 def test_print_deals(mock_print):

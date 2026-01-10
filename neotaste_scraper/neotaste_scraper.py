@@ -6,18 +6,32 @@ You can filter and retrieve restaurant deals, including
 different formats: text, JSON, or HTML.
 """
 
+from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
 import requests
 from bs4 import BeautifulSoup
-from typing import Any, Dict, List, Optional, Union
+from bs4.element import Tag
 
 # Constants
 BASE_URL = "https://neotaste.com"
+
 
 def get_city_url(city_slug: str, lang: str = "de") -> str:
     """Construct full URL for the given city with the specified language."""
     return f"{BASE_URL}/{lang}/restaurants/{city_slug}"
 
-def extract_deals_from_card(card, filter_mode: Optional[str] = None) -> Optional[Dict[str, Any]]:
+
+@dataclass
+class Deal:
+    """A parsed deal from a restaurant card."""
+    text: str
+    component: str
+    deal_type: str  # 'flash', 'event', 'flash+event', 'other'
+
+
+def extract_deals_from_card(card: Tag,
+                            filter_mode: Optional[str] = None
+                            ) -> Optional[Dict[str, Any]]:
     """Extract deals from a single restaurant card.
 
     filter_mode may be one of: None (no filter), 'events' (only 🌟),
@@ -41,7 +55,7 @@ def extract_deals_from_card(card, filter_mode: Optional[str] = None) -> Optional
     # Extract deal elements generically: match any preview whose component name ends with "DealPreview"
     deal_elements = deals_container.select('[data-sentry-component$="DealPreview"]')
 
-    deals = []
+    deals: List[Deal] = []
     for el in deal_elements:
         text = el.get_text(strip=True)
         if not text:
@@ -49,28 +63,50 @@ def extract_deals_from_card(card, filter_mode: Optional[str] = None) -> Optional
         component = el.get('data-sentry-component', '')
         # small heuristic for flash detection: component name or inner html may indicate flash
         inner_html = str(el).lower()
-        is_flash = ('flashdeal' in component) or ('flashdeal' in inner_html) or ('bolt' in inner_html) or ('⚡' in text)
-        deals.append({"text": text, "component": component, "is_flash": is_flash})
+        is_flash = (
+            ('flashdeal' in component.lower())
+            or ('flashdeal' in inner_html)
+            or ('⚡' in text)
+            or ('bolt' in inner_html)
+        )
+        # event detection: emoji or component/inner html marker
+        is_event = (
+            ('eventdeal' in component.lower())
+            or ('eventdeal' in inner_html)
+            or ('🌟' in text)
+        )
+        # determine combined deal_type
+        if is_flash and is_event:
+            deal_type = 'flash+event'
+        elif is_flash:
+            deal_type = 'flash'
+        elif is_event:
+            deal_type = 'event'
+        else:
+            deal_type = 'other'
+
+        deals.append(Deal(text=text, component=component, deal_type=deal_type))
 
     # Normalize filter_mode values
     if isinstance(filter_mode, bool):
         filter_mode = 'events' if filter_mode else None
 
     if filter_mode == 'events':
-        # Keep only event deals marked with the star
-        deals = [d for d in deals if ("🌟" in d['text'])]
+        # Keep only event deals detected by heuristic
+        deals = [d for d in deals if d.deal_type in ('event', 'flash+event')]
     elif filter_mode == 'flash':
-        deals = [d for d in deals if d.get('is_flash')]
+        deals = [d for d in deals if d.deal_type in ('flash', 'flash+event')]
     elif filter_mode == 'special':
-        deals = [d for d in deals if ("🌟" in d['text']) or d.get('is_flash')]
+        deals = [d for d in deals if d.deal_type != 'other']
 
     # Convert to plain list of strings for output
-    deals = [d['text'] for d in deals]
+    deals = [d.text for d in deals]
 
     if not deals:
         return None  # Return None if no deals match the filter
 
     return {"restaurant": name, "deals": deals, "link": link}
+
 
 def fetch_deals_from_city(city_slug: str, filter_mode: Optional[str] = None, lang: str = "de") -> List[Dict[str, Any]]:
     """Scrape deals from a specific city and optionally filter deals.
@@ -100,7 +136,7 @@ def fetch_deals_from_city(city_slug: str, filter_mode: Optional[str] = None, lan
     return results
 
 
-def fetch_all_cities(lang="de"):
+def fetch_all_cities(lang: str = "de") -> List[Dict[str, str]]:
     """Scrape the main cities page to get a list of all cities."""
     url = f"{BASE_URL}/{lang}/restaurants"
     try:
