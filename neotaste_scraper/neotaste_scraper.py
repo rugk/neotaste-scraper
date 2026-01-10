@@ -87,10 +87,6 @@ def extract_deals_from_card(card: Tag,
 
         deals.append(Deal(text=text, component=component, deal_type=deal_type))
 
-    # Normalize filter_mode values
-    if isinstance(filter_mode, bool):
-        filter_mode = 'events' if filter_mode else None
-
     if filter_mode == 'events':
         # Keep only event deals detected by heuristic
         deals = [d for d in deals if d.deal_type in ('event', 'flash+event')]
