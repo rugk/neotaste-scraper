@@ -8,20 +8,20 @@ different formats: text, JSON, or HTML.
 
 import requests
 from bs4 import BeautifulSoup
+from typing import Any, Dict, List, Optional, Union
 
 # Constants
 BASE_URL = "https://neotaste.com"
 
-def get_city_url(city_slug, lang="de"):
+def get_city_url(city_slug: str, lang: str = "de") -> str:
     """Construct full URL for the given city with the specified language."""
     return f"{BASE_URL}/{lang}/restaurants/{city_slug}"
 
-def extract_deals_from_card(card, filter_mode=None):
+def extract_deals_from_card(card, filter_mode: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """Extract deals from a single restaurant card.
 
     filter_mode may be one of: None (no filter), 'events' (only 🌟),
-    'flash' (only flash deals), 'special' (events OR flash). For
-    backward-compatibility a boolean True is interpreted as 'events'.
+    'flash' (only flash deals), 'special' (events OR flash).
     """
     link = card.get("href")
     if not link.startswith("http"):
@@ -52,9 +52,9 @@ def extract_deals_from_card(card, filter_mode=None):
         is_flash = ('flashdeal' in component) or ('flashdeal' in inner_html) or ('bolt' in inner_html) or ('⚡' in text)
         deals.append({"text": text, "component": component, "is_flash": is_flash})
 
-    # Normalize filter_mode for backwards compatibility
-    if filter_mode is True:
-        filter_mode = 'events'
+    # Normalize filter_mode values
+    if isinstance(filter_mode, bool):
+        filter_mode = 'events' if filter_mode else None
 
     if filter_mode == 'events':
         # Keep only event deals marked with the star
@@ -72,11 +72,12 @@ def extract_deals_from_card(card, filter_mode=None):
 
     return {"restaurant": name, "deals": deals, "link": link}
 
-def fetch_deals_from_city(city_slug: str, filter_mode=None, lang="de"):
+def fetch_deals_from_city(city_slug: str, filter_mode: Optional[str] = None, lang: str = "de") -> List[Dict[str, Any]]:
     """Scrape deals from a specific city and optionally filter deals.
 
-    filter_mode may be None, True/False (legacy), or one of 'events','flash','special'.
+    filter_mode may be None or one of 'events','flash','special'.
     """
+
     url = get_city_url(city_slug, lang)
     try:
         html = requests.get(url, timeout=10).text
@@ -91,6 +92,7 @@ def fetch_deals_from_city(city_slug: str, filter_mode=None, lang="de"):
     cards = soup.select("a[href*='/restaurants/']")
 
     for card in cards:
+        # Support legacy callers passing filter_events keyword by letting extract handle it
         result = extract_deals_from_card(card, filter_mode)
         if result:
             results.append(result)

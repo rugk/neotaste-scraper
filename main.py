@@ -16,11 +16,11 @@ from neotaste_scraper.data_output import (
 )
 from neotaste_scraper.neotaste_scraper import (
     fetch_deals_from_city,
-    fetch_all_cities
+    fetch_all_cities,
 )
 
 
-def main():
+def main() -> None:
     """Main entry point"""
     # Set up CLI argument parsing
     parser = argparse.ArgumentParser(description="NeoTaste CLI Tool")

@@ -36,8 +36,8 @@ def test_extract_deals_from_card(html_file):
     # Find the first <a> tag (simulating the restaurant card)
     card = soup.find("a")
 
-    # Call the function to extract deals
-    result = extract_deals_from_card(card, filter_events=False)
+    # Call the function to extract deals (no filter)
+    result = extract_deals_from_card(card, filter_mode=None)
 
     # Assert the result is not None
     assert result is not None
@@ -70,8 +70,8 @@ def test_fetch_deals_from_city(mock_get, html_file):
     mock_response.text = html_content
     mock_get.return_value = mock_response
 
-    # Call the function under test
-    result = fetch_deals_from_city("sample-city", filter_events=False)
+    # Call the function under test (no filter)
+    result = fetch_deals_from_city("sample-city", filter_mode=None)
 
     # Assert that the result contains 1 restaurant
     assert len(result) == 1
