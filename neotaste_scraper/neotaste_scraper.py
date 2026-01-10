@@ -37,74 +37,83 @@ def extract_deals_from_card(card: Tag,
     filter_mode may be one of: None (no filter), 'events' (only 🌟),
     'flash' (only flash deals), 'special' (events OR flash).
     """
-    link = card.get("href")
-    if not link.startswith("http"):
-        link = BASE_URL + link
+    # helper functions to keep this function small and testable
+    def _get_link(a_tag: Tag) -> Optional[str]:
+        href = a_tag.get("href")
+        if not href:
+            return None
+        return href if href.startswith("http") else BASE_URL + href
 
-    # Restaurant name
-    name_el = card.select_one("h4")
-    if not name_el:
-        return None  # Return None if no name is found
-    name = name_el.get_text(strip=True)
+    def _get_name(a_tag: Tag) -> Optional[str]:
+        name_element = a_tag.select_one("h4")
+        return None if not name_element else name_element.get_text(strip=True)
 
-    # Deal container
-    deals_container = card.select_one('[data-sentry-component="RestaurantCardDeals"]')
-    if not deals_container:
-        return None  # Return None if no deals container is found
+    def _get_deal_elements(a_tag: Tag) -> List[Tag]:
+        container = a_tag.select_one('[data-sentry-component="RestaurantCardDeals"]')
+        if not container:
+            return []
+        return container.select('[data-sentry-component$="DealPreview"]')
 
-    # Extract deal elements generically: match any preview whose component name ends with "DealPreview"
-    deal_elements = deals_container.select('[data-sentry-component$="DealPreview"]')
-
-    deals: List[Deal] = []
-    for el in deal_elements:
-        text = el.get_text(strip=True)
-        if not text:
-            continue
-        component = el.get('data-sentry-component', '')
-        # small heuristic for flash detection: component name or inner html may indicate flash
-        inner_html = str(el).lower()
-        is_flash = (
-            ('flashdeal' in component.lower())
-            or ('flashdeal' in inner_html)
-            or ('⚡' in text)
-            or ('bolt' in inner_html)
+    def _classify_deal(el: Tag) -> Optional[Deal]:
+        txt = el.get_text(strip=True)
+        if not txt:
+            return None
+        comp = el.get('data-sentry-component', '')
+        inner = str(el).lower()
+        is_flash_local = (
+            ('flashdeal' in comp.lower())
+            or ('flashdeal' in inner)
+            or ('⚡' in txt)
         )
-        # event detection: emoji or component/inner html marker
-        is_event = (
-            ('eventdeal' in component.lower())
-            or ('eventdeal' in inner_html)
-            or ('🌟' in text)
+        is_event_local = (
+            ('eventdeal' in comp.lower())
+            or ('eventdeal' in inner)
+            or ('🌟' in txt)
         )
-        # determine combined deal_type
-        if is_flash and is_event:
-            deal_type = 'flash+event'
-        elif is_flash:
-            deal_type = 'flash'
-        elif is_event:
-            deal_type = 'event'
+        if is_flash_local and is_event_local:
+            dtype = 'flash+event'
+        elif is_flash_local:
+            dtype = 'flash'
+        elif is_event_local:
+            dtype = 'event'
         else:
-            deal_type = 'other'
+            dtype = 'other'
+        return Deal(text=txt, component=comp, deal_type=dtype)
 
-        deals.append(Deal(text=text, component=component, deal_type=deal_type))
+    def _filter_deals(deals_in: List[Deal], mode: Optional[str]) -> List[Deal]:
+        if mode == 'events':
+            return [d for d in deals_in if d.deal_type in ('event', 'flash+event')]
+        if mode == 'flash':
+            return [d for d in deals_in if d.deal_type in ('flash', 'flash+event')]
+        if mode == 'special':
+            return [d for d in deals_in if d.deal_type != 'other']
+        return deals_in
 
-    if filter_mode == 'events':
-        # Keep only event deals detected by heuristic
-        deals = [d for d in deals if d.deal_type in ('event', 'flash+event')]
-    elif filter_mode == 'flash':
-        deals = [d for d in deals if d.deal_type in ('flash', 'flash+event')]
-    elif filter_mode == 'special':
-        deals = [d for d in deals if d.deal_type != 'other']
+    # assemble outputs using small helpers
+    link = _get_link(card)
+    if not link:
+        return None
+    name = _get_name(card)
+    if not name:
+        return None
 
-    # Convert to plain list of strings for output
-    deals = [d.text for d in deals]
+    raw_elements = _get_deal_elements(card)
+    parsed_deals: List[Deal] = []
+    for elem in raw_elements:
+        item = _classify_deal(elem)
+        if item is not None:
+            parsed_deals.append(item)
 
-    if not deals:
-        return None  # Return None if no deals match the filter
+    parsed_deals = _filter_deals(parsed_deals, filter_mode)
+    results = [d.text for d in parsed_deals]
+    if not results:
+        return None
+    return {"restaurant": name, "deals": results, "link": link}
 
-    return {"restaurant": name, "deals": deals, "link": link}
 
-
-def fetch_deals_from_city(city_slug: str, filter_mode: Optional[str] = None, lang: str = "de") -> List[Dict[str, Any]]:
+def fetch_deals_from_city(city_slug: str,
+                          filter_mode: Optional[str] = None,
+                          lang: str = "de") -> List[Dict[str, Any]]:
     """Scrape deals from a specific city and optionally filter deals.
 
     filter_mode may be None or one of 'events','flash','special'.
