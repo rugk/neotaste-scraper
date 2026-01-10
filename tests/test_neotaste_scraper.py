@@ -23,7 +23,8 @@ def load_html(file_name):
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/deal-per-city.html',
     'tests/html_snippets/deal-per-city-simplified.html',
-    'tests/html_snippets/deal-per-city-new-badge.html'
+    'tests/html_snippets/deal-per-city-new-badge.html',
+    'tests/html_snippets/deal-per-city-flash.html'
 ])
 def test_extract_deals_from_card(html_file):
     """Test extract_deals_from_card function with different HTML contents"""
@@ -42,9 +43,20 @@ def test_extract_deals_from_card(html_file):
     assert result is not None
     assert result['restaurant'] == "PETER PANE Burgergrill & Bar - Friedrichstr."
     assert result['link'] == "https://neotaste.com/gb/restaurants/berlin/peter-pane-burgergrill-bar-friedrichstr"
-    assert len(result['deals']) == 2  # Two deals: one with 🌟 and one without
-    assert "🌟 €5 Wild Bert with Betel 🌟" in result['deals']
-    assert "2for1 Aperitif" in result['deals']
+
+    # Expectations per HTML fixture
+    expected = {
+        'tests/html_snippets/deal-per-city.html': ["🌟 €5 Wild Bert with Betel 🌟", "2for1 Aperitif"],
+        'tests/html_snippets/deal-per-city-simplified.html': ["🌟 €5 Wild Bert with Betel 🌟", "2for1 Aperitif"],
+        'tests/html_snippets/deal-per-city-new-badge.html': ["🌟 €5 Wild Bert with Betel 🌟", "2for1 Aperitif"],
+        'tests/html_snippets/deal-per-city-flash.html': ["5€ Bowl", "10€ Rabatt", "GRATIS Getränk"]
+    }
+
+    exp = expected.get(html_file)
+    assert exp is not None
+    assert len(result['deals']) == len(exp)
+    for deal in exp:
+        assert deal in result['deals']
 
 @pytest.mark.parametrize("html_file", [
     'tests/html_snippets/deal-per-city.html'

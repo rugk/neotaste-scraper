@@ -33,13 +33,24 @@ def extract_deals_from_card(card, filter_events):
     if not deals_container:
         return None  # Return None if no deals container is found
 
-    # Extract deal text
-    deal_spans = deals_container.select('[data-sentry-component="RestaurantDealPreview"] span')
-    deals = [sp.get_text(strip=True) for sp in deal_spans if sp.get_text(strip=True)]
+    # Extract deal elements generically: match any preview whose component name ends with "DealPreview"
+    deal_elements = deals_container.select('[data-sentry-component$="DealPreview"]')
+
+    deals = []
+    for el in deal_elements:
+        text = el.get_text(strip=True)
+        if not text:
+            continue
+        component = el.get('data-sentry-component', '')
+        deals.append({"text": text, "component": component})
 
     if filter_events:
-        # Filter only event deals (those with 🌟)
-        deals = [deal for deal in deals if "🌟" in deal]
+        # Keep deals that are explicitly marked as event-deals (contain 🌟)
+        # or are flash deals (component name contains 'FlashDeal')
+        deals = [d for d in deals if ("🌟" in d['text']) or ("FlashDeal" in d['component'])]
+
+    # Convert to plain list of strings for output
+    deals = [d['text'] for d in deals]
 
     if not deals:
         return None  # Return None if no deals match the filter
