@@ -33,9 +33,9 @@ jobs:
         run: |
           mkdir -p output/de output/en
           python main.py --all --lang de --html output/de/index.html --json output/de/index.json
-          python main.py --all --lang de --event --html output/de/special-only.html --json output/de/special-only.json
+          python main.py --all --lang de --special --html output/de/special-only.html --json output/de/special-only.json
           python main.py --all --lang en --html output/en/index.html --json output/en/index.json
-          python main.py --all --lang en --event --html output/en/special-only.html --json output/en/special-only.json
+          python main.py --all --lang en --special --html output/en/special-only.html --json output/en/special-only.json
 
       # smoke test
       - name: Verify JSON export contains results

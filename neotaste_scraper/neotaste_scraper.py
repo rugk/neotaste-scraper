@@ -16,8 +16,13 @@ def get_city_url(city_slug, lang="de"):
     """Construct full URL for the given city with the specified language."""
     return f"{BASE_URL}/{lang}/restaurants/{city_slug}"
 
-def extract_deals_from_card(card, filter_events):
-    """Extract deals from a single restaurant card."""
+def extract_deals_from_card(card, filter_mode=None):
+    """Extract deals from a single restaurant card.
+
+    filter_mode may be one of: None (no filter), 'events' (only 🌟),
+    'flash' (only flash deals), 'special' (events OR flash). For
+    backward-compatibility a boolean True is interpreted as 'events'.
+    """
     link = card.get("href")
     if not link.startswith("http"):
         link = BASE_URL + link
@@ -42,12 +47,22 @@ def extract_deals_from_card(card, filter_events):
         if not text:
             continue
         component = el.get('data-sentry-component', '')
-        deals.append({"text": text, "component": component})
+        # small heuristic for flash detection: component name or inner html may indicate flash
+        inner_html = str(el).lower()
+        is_flash = ('flashdeal' in component) or ('flashdeal' in inner_html) or ('bolt' in inner_html) or ('⚡' in text)
+        deals.append({"text": text, "component": component, "is_flash": is_flash})
 
-    if filter_events:
-        # Keep deals that are explicitly marked as event-deals (contain 🌟)
-        # or are flash deals (component name contains 'FlashDeal')
-        deals = [d for d in deals if ("🌟" in d['text']) or ("FlashDeal" in d['component'])]
+    # Normalize filter_mode for backwards compatibility
+    if filter_mode is True:
+        filter_mode = 'events'
+
+    if filter_mode == 'events':
+        # Keep only event deals marked with the star
+        deals = [d for d in deals if ("🌟" in d['text'])]
+    elif filter_mode == 'flash':
+        deals = [d for d in deals if d.get('is_flash')]
+    elif filter_mode == 'special':
+        deals = [d for d in deals if ("🌟" in d['text']) or d.get('is_flash')]
 
     # Convert to plain list of strings for output
     deals = [d['text'] for d in deals]
@@ -57,8 +72,11 @@ def extract_deals_from_card(card, filter_events):
 
     return {"restaurant": name, "deals": deals, "link": link}
 
-def fetch_deals_from_city(city_slug: str, filter_events: bool, lang="de"):
-    """Scrape deals from a specific city and optionally filter event deals."""
+def fetch_deals_from_city(city_slug: str, filter_mode=None, lang="de"):
+    """Scrape deals from a specific city and optionally filter deals.
+
+    filter_mode may be None, True/False (legacy), or one of 'events','flash','special'.
+    """
     url = get_city_url(city_slug, lang)
     try:
         html = requests.get(url, timeout=10).text
@@ -73,7 +91,7 @@ def fetch_deals_from_city(city_slug: str, filter_events: bool, lang="de"):
     cards = soup.select("a[href*='/restaurants/']")
 
     for card in cards:
-        result = extract_deals_from_card(card, filter_events)
+        result = extract_deals_from_card(card, filter_mode)
         if result:
             results.append(result)
 

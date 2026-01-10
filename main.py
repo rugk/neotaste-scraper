@@ -30,9 +30,11 @@ def main():
     parser.add_argument(
         "-a", "--all", action="store_true", help="Scrape all available cities"
     )
-    parser.add_argument(
-        "-e", "--events", action="store_true", help="Filter only event deals (🌟)"
-    )
+    # Filtering options: mutually exclusive
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-e", "--events", action="store_true", help="Filter only event deals (🌟)")
+    group.add_argument("-f", "--flash", action="store_true", help="Filter only flash deals (⚡)")
+    group.add_argument("-s", "--special", action="store_true", help="Filter only special deals (events + flash)")
     parser.add_argument(
         "-j", "--json", type=str, nargs="?", const="output.json", help="Output in JSON format (default: output.json)"
     )
@@ -53,10 +55,20 @@ def main():
 
     cities_data = {}
 
+    # Decide filter mode to pass to scraper
+    if args.events:
+        filter_mode = 'events'
+    elif args.flash:
+        filter_mode = 'flash'
+    elif args.special:
+        filter_mode = 'special'
+    else:
+        filter_mode = None
+
     if args.city:
         # Fetch and print deals for a specific city
         print(f"Fetching deals for city: {args.city}...")
-        deals = fetch_deals_from_city(args.city, args.events, args.lang)
+        deals = fetch_deals_from_city(args.city, filter_mode, args.lang)
         cities_data[args.city] = deals
     elif args.all:
         # Fetch and print deals for all cities
@@ -64,7 +76,7 @@ def main():
         cities = fetch_all_cities(args.lang)
         for city in cities:
             print(f"Fetching deals for city: {city['slug']}...")
-            city_deals = fetch_deals_from_city(city['slug'], args.events, args.lang)
+            city_deals = fetch_deals_from_city(city['slug'], filter_mode, args.lang)
             cities_data[city['slug']] = city_deals
 
     if not cities_data:

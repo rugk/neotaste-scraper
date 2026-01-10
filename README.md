@@ -60,6 +60,12 @@ Once the tool is installed, you can run the script using the command line to fet
 * `-e`, `--events`
   Filter only event deals, which are marked with `🌟` in their name.
 
+* `-f`, `--flash`
+  Filter only flash deals, which are special flash promotions (bolt/flash badge).
+
+* `-s`, `--special`
+  Filter only special deals (includes both `events` and `flash`).
+
 * `-j`, `--json`
   Output the results in JSON format. This will generate an `output.json` file.
 
