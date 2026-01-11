@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Redirecting…</title>
+    <!-- Fallback meta refresh to English (default) if JS is disabled -->
+    <meta http-equiv="refresh" content="0; url=/en/">
+    <script>
+      (function () {
+        // check for explicit override: ?lang=de or ?lang=en
+        try {
+          const params = new URLSearchParams(location.search);
+          const langParam = params.get('lang');
+          const supported = ['de', 'en'];
+          if (langParam && supported.includes(langParam)) {
+            location.replace('/' + langParam + '/');
+            return;
+          }
+
+          // browser language preference
+          const prefs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
+          const first = (prefs[0] || '').toLowerCase();
+          if (first.startsWith('de')) {
+            location.replace('/de/');
+            return;
+          }
+          // default to English when not German
+          location.replace('/en/');
+        } catch (e) {
+          // on any error fall back to German via meta refresh
+          /* eslint-disable no-console */
+          console.warn('Redirect failed, falling back to /de/', e);
+          /* eslint-enable no-console */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to language-specific site… If you are not redirected, <a id="choose-de" href="/de/">go to German (DE)</a> or <a id="choose-en" href="/en/">English (EN)</a>.</p>
+  </body>
+</html>
