@@ -1,9 +1,8 @@
-<!-- Auto-generated guidance for AI coding agents working on this repository. Update as needed. -->
-
 # Copilot instructions for neotaste_scraper
 
 Summary
 - Small CLI tool to scrape NeoTaste restaurant pages, extract deal badges, and export results (JSON/HTML/text).
+- It specifically is built to allow filtering for special god deals. NeoTaste often calls them "event-deals" (🌟) or "flash-deals" (⚡).
 
 Key files
 - `main.py`: CLI entry — flags: `--city`, `--all`, `--events` (legacy), `--flash`, `--special`, `--json`, `--html`, `--lang`.
@@ -27,11 +26,15 @@ Testing & workflows
 - Run unit tests with `pytest`. Tests mock HTTP via `unittest.mock.patch('requests.get')` and load fixtures from `tests/html_snippets/`.
 - CI exports site files via `.github/workflows/github-pages.yml` which runs `python main.py --all --lang <lang> --special --html output/<lang>/special-only.html --json output/<lang>/special-only.json`.
 - Linting via `pylint` in `.github/workflows/pylint.yml` — keep functions small (avoid too-many-branches). Use type hints and small helper functions.
+- Linting also done via `flake8` in `.github/workflows/python-app.yml`.
 
 Developer patterns & conventions
-- Prefer explicit typing and small helper functions in scraper to keep Pylint happy.
-- Tests assert exact strings from fixtures; when changing parsing, update tests and fixtures accordingly.
+- You can be very lenient with backwards compatibility (e.g. for CLI flags) since this is a small tool. But update README.md and tests accordingly.
+- Prefer modern Python, explicit typing and small helper functions in scraper to keep Pylint happy.
 - Templates live in `templates/` and are rendered via Jinja2 in `data_output.py`.
+- Should be usable as a Python module, but also primarily a CLI tool.
+- Is executed in a GitHub Workflow for exporting results to GitHub Pages, see `.github/workflows/github-pages.yml`.
+- Should be fully documented with docstrings and type hints (cf. pylint linting).
 
 Common tasks (commands)
 ```bash
@@ -43,14 +46,10 @@ pylint $(git ls-files '*.py')
 ```
 
 Do / Don't
-- Do: Update `tests/html_snippets/` when you change parsing rules. Update `README.md` and `.github/workflows/github-pages.yml` when changing CLI flags.
+- Do: Add new tests/fixtures in `tests/html_snippets/` when you change parsing rules.
+- Do: Update `README.md` and `.github/workflows/github-pages.yml` when changing CLI flags.
 - Don't: change the output dict shape without updating `data_output.py` and tests.
 
 If you modify parsing logic
 - Add or update an HTML fixture in `tests/html_snippets/` that demonstrates the HTML pattern.
 - Add a focused unit test in `tests/test_neotaste_scraper.py` (examples exist) that asserts the exact deals extracted.
-
-Questions for maintainers
-- Which deal badges beyond `DealPreview`/`FlashDealPreview` should be considered special in future? Add examples to fixtures.
-
--- End --
