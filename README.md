@@ -1,6 +1,6 @@
 # NeoTaste Scraper CLI Tool
 
-This tool allows you to scrape restaurant deal information from NeoTaste's city-specific restaurant pages. You can filter and retrieve restaurant deals, including ”event-deals“ (marked with 🌟), and export the data to different formats: text, JSON, or HTML.
+This tool allows you to scrape restaurant deal information from NeoTaste's city-specific restaurant pages. You can filter and retrieve restaurant deals, including special deals like ”event-deals“ (marked with 🌟) or ”event-deals“ (marked with ⚡), and export the data to different formats: text, JSON, or HTML.
 
 ## Website
 
