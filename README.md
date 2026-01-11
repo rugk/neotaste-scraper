@@ -11,7 +11,7 @@ The JSON result is also available:
 * [full JSON result](https://rugk.github.io/neotaste_scraper/en/index.json)
 * [only special deals](https://rugk.github.io/neotaste_scraper/en/special-only.json)
 
-Same s avaulable in German:
+Same is avaulable in German (direct links):
 * [all events](https://rugk.github.io/neotaste_scraper/de)
 * [a filtered view with all special deals](https://rugk.github.io/neotaste_scraper/de/special-only.html)
 * [full JSON result](https://rugk.github.io/neotaste_scraper/de/index.json)
