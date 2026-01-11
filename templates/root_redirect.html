@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Redirecting…</title>
     <!-- Fallback meta refresh to English (default) if JS is disabled -->
-    <meta http-equiv="refresh" content="0; url=/en/">
+    <meta http-equiv="refresh" content="0; url=./en/">
     <script>
       (function () {
         // check for explicit override: ?lang=de or ?lang=en
@@ -22,11 +22,11 @@
           const prefs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
           const first = (prefs[0] || '').toLowerCase();
           if (first.startsWith('de')) {
-            location.replace('/de/');
+            location.replace(window.location.href + '/de/');
             return;
           }
           // default to English when not German
-          location.replace('/en/');
+          location.replace(window.location.href + '/en/');
         } catch (e) {
           // on any error fall back to German via meta refresh
           /* eslint-disable no-console */
