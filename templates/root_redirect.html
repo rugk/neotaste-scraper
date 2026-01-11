@@ -14,7 +14,7 @@
           const langParam = params.get('lang');
           const supported = ['de', 'en'];
           if (langParam && supported.includes(langParam)) {
-            location.replace(new URL('./' + langParam + '/', window.location.href).href);
+            location.replace(new URL(langParam + '/', window.location.href).href);
             return;
           }
 
@@ -22,11 +22,11 @@
           const prefs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'en'];
           const first = (prefs[0] || '').toLowerCase();
           if (first.startsWith('de')) {
-            location.replace(new URL('./de/', window.location.href).href);
+            location.replace(new URL('de/', window.location.href).href);
             return;
           }
           // default to English when not German
-          location.replace(new URL('./en/', window.location.href).href);
+          location.replace(new URL('en/', window.location.href).href);
         } catch (e) {
           // on any error fall back to German via meta refresh
           /* eslint-disable no-console */
